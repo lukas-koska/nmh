@@ -53,7 +53,11 @@ RUN set -eux; \
 		opcache \
     ;
 
+RUN docker-php-ext-install pdo_mysql;
 ###> recipes ###
+###> doctrine/doctrine-bundle ###
+
+###< doctrine/doctrine-bundle ###
 ###< recipes ###
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
@@ -93,13 +97,13 @@ COPY --link  . ./
 RUN rm -Rf docker/
 
 RUN set -eux; \
-	mkdir -p var/cache var/log; \
-    if [ -f composer.json ]; then \
-		composer dump-autoload --classmap-authoritative --no-dev; \
-		composer dump-env prod; \
-		composer run-script --no-dev post-install-cmd; \
-		chmod +x bin/console; sync; \
-    fi
+	mkdir -p var/cache var/log;
+#    if [ -f composer.json ]; then \
+#		composer dump-autoload --classmap-authoritative --no-dev; \
+#		composer dump-env prod; \
+#		composer run-script --no-dev post-install-cmd; \
+#		chmod +x bin/console; sync; \
+#    fi
 
 # Dev image
 FROM app_php AS app_php_dev
@@ -114,9 +118,9 @@ RUN rm "$PHP_INI_DIR/conf.d/app.prod.ini"; \
 COPY --link docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 
 RUN set -eux; \
-	install-php-extensions xdebug
+	install-php-extensions xdebug;
 
-RUN rm -f .env.local.php
+RUN rm -f .env.local.php;
 
 # Caddy image
 FROM caddy:2.6-alpine AS app_caddy
