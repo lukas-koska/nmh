@@ -2,77 +2,61 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Rest\ResourceType;
 
 use App\Rest\AsArray;
-use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\PositiveOrZero;
+use Symfony\Component\Validator\Constraints\Type;
 
-/**
- * Product
- *
- * @ORM\Table(name="product")
- *
- * @ORM\Entity
- */
-class Product
+class ProductRequest implements RequestInterface
 {
     use AsArray;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private ?int $id;
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
+    private string $name;
 
-    /**
-     * @ORM\Column(name="name", type="string", nullable=false)
-     */
-    private ?string $name;
-
-    /**
-     * @ORM\Column(name="description", type="text", nullable=true)
-     */
+    #[Assert\Blank]
     private ?string $description;
 
-    /**
-     * @ORM\Column(name="manufacturer", type="string", nullable=true)
-     */
+    #[Assert\Blank]
+    #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
     private ?string $manufacturer;
 
-    /**
-     * @ORM\Column(name="price", type="float", options={"default" : "0"})
-     */
-    private ?float $price;
+    #[Assert\Blank]
+    private ?float $price = 0;
 
     /**
-     * @return int|null
+     * @return int
      */
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
 
     /**
-     * @param int|null $id
+     * @param int $id
      */
-    public function setId(?int $id): void
+    public function setId(int $id): void
     {
         $this->id = $id;
     }
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * @param string|null $name
+     * @param string $name
      */
-    public function setName(?string $name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -110,18 +94,23 @@ class Product
     }
 
     /**
-     * @return float|null
+     * @return float|int|null
      */
-    public function getPrice(): ?float
+    public function getPrice(): float|int|null
     {
         return $this->price;
     }
 
     /**
-     * @param float|null $price
+     * @param float|int|string|null $price
      */
-    public function setPrice(?float $price): void
+    public function setPrice(float|int|string|null $price): void
     {
+        if (is_string($price)) {
+            $this->price = floatval($price);
+            return;
+        }
         $this->price = $price;
     }
+
 }
