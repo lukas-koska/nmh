@@ -40,7 +40,6 @@ class ProductController extends AbstractController
             ];
         }
 
-
         return $this->json([
             'success' => true,
             'products' => $data
@@ -118,7 +117,8 @@ class ProductController extends AbstractController
      */
     public function edit(ManagerRegistry $doctrine, Request $request, int $id): JsonResponse
     {
-        $requestData = $request->request->all();
+        // Validate fields
+        $requestData = json_decode($request->getContent(), true);
         if (array_key_exists('price', $requestData)) {
             $requestData['price'] = floatval($requestData['price']);
         }
@@ -164,6 +164,7 @@ class ProductController extends AbstractController
      */
     public function search(ManagerRegistry $doctrine, Request $request, ElasticSearchService $elasticSearchService): JsonResponse
     {
+        // Validate search fields
         $requestData = $request->request->all();
         if (array_key_exists('price', $requestData)) {
             $requestData['price'] = floatval($requestData['price']);

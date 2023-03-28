@@ -17,30 +17,30 @@ class ProductRequest implements RequestInterface
     #[Assert\NotBlank]
     #[Assert\NotNull]
     #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
-    private string $name;
+    private ?string $name = null;
 
     #[Assert\Blank]
-    private ?string $description;
+    private ?string $description = '';
 
     #[Assert\Blank]
     #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
-    private ?string $manufacturer;
+    private ?string $manufacturer = '';
 
     #[Assert\Blank]
     private ?float $price = 0;
 
     /**
-     * @return string
+     * @return ?string
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
     /**
-     * @param string $name
+     * @param ?string $name
      */
-    public function setName(string $name): void
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
