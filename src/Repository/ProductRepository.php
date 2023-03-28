@@ -7,49 +7,36 @@ namespace App\Repository;
 use App\Controller\InjectorTrait\Validator;
 use App\Entity\Product;
 use App\Rest\ResourceType\ProductRequest;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class ProductRepository
+class ProductRepository extends ServiceEntityRepository
 {
     use Validator;
 
-    public function __construct(
-        private ManagerRegistry $doctrine
-    )
+    public function __construct(ManagerRegistry $registry)
     {
-        // Nothing to do here
-    }
-
-    public function getAllProducts()
-    {
-        return $this
-            ->doctrine
-            ->getRepository(Product::class)
-            ->findAll();
-    }
-
-    public function getProductFromId(int $id)
-    {
-        return $this
-            ->doctrine
-            ->getRepository(Product::class)
-            ->find($id);
+        parent::__construct($registry, Product::class);
     }
 
     public function createNewProduct(array $data) : ?Product
     {
+        if (array_key_exists('price', $data)) {
+            $data['price'] = floatval($data['price']);
+        }
+
         $product = $this->denormalizer->denormalize($data, Product::class);
         if ($product !== null) {
             // Also add data to ElasticSearch (via event handler from FOSElasticaBundle)
-            $this->doctrine->getManager()->persist($product);
-            $this->doctrine->getManager()->flush();
+            $this->getEntityManager()->persist($product);
+            $this->getEntityManager()->flush();
         }
         return $product;
     }
 
     public function editProduct(ProductRequest $dto, int $id) : ?Product
     {
-        $product = $this->doctrine->getManager()->getRepository(Product::class)->find($id);
+        $product = $this->find($id);
         if ($product !== null) {
 
             $product->setName($dto->getName());
@@ -57,7 +44,7 @@ class ProductRepository
             $product->setManufacturer($dto->getManufacturer());
             $product->setPrice($dto->getPrice());
 
-            $this->doctrine->getManager()->flush();
+            $this->getEntityManager()->flush();
         }
         return $product;
     }

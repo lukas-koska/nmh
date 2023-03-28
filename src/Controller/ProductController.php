@@ -38,7 +38,7 @@ class ProductController extends AbstractController
     {
         // If product has only one category, the category could be deliver with product
         /** @var Product $products */
-        $products = $this->productRepository->getAllProducts();
+        $products = $this->productRepository->findAll();
 
         // Do some additional manipulation with products
 
@@ -55,7 +55,7 @@ class ProductController extends AbstractController
     {
         // This could be moved to repository
         /** @var Product $product */
-        $product = $this->productRepository->getProductFromId($id);
+        $product = $this->productRepository->find($id);
 
         if (!$product) {
             return $this->json([
@@ -71,11 +71,12 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/product", name="product_new", methods={"POST"})
+     * @Route("/product/create", name="product_new", methods={"POST"})
      */
     public function new(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
         $requestData = $request->request->all();
+        /** @var ProductRequest $dto */
         $dto = $this->denormalizeRequest($requestData, ProductRequest::class);
 
         $errors = $this->validator->validate($dto);
@@ -102,12 +103,13 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/product/{id}", name="product_new", methods={"PUT"})
+     * @Route("/product/{id}", name="product_edit", methods={"PUT"})
      */
     public function edit(ManagerRegistry $doctrine, Request $request, int $id): JsonResponse
     {
         // Validate fields
         $requestData = json_decode($request->getContent(), true);
+        /** @var ProductRequest $dto */
         $dto = $this->denormalizeRequest($requestData, ProductRequest::class);
 
         $errors = $this->validator->validate($dto);
