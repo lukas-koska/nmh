@@ -21,6 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     use Validator;
+    use CustomJsonResponse;
 
     public function __construct(
         private ProductRepository $productRepository

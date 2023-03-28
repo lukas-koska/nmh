@@ -1,4 +1,16 @@
-# Symfony Docker
+# Zadanie pre NMH
+
+* Assignment is built on the official docker image for Symfony
+* Assignment contains only model for product
+* Assignment contains `er-diagram.sql` for relation between Product's and Categories
+* Assignment contains following API endpoints
+  * GET /api/product
+  * GET /api/product/{id}
+  * POST /api/product
+  * PUT /api/product/{id}
+  * POST /api/product/search
+
+## Symfony Docker
 
 A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework, with full [HTTP/2](https://symfony.com/doc/current/weblink.html), HTTP/3 and HTTPS support.
 
