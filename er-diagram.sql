@@ -24,4 +24,5 @@ CREATE TABLE product
 /*
  Polia image_1, image_2, image_3 spĺňajú zadanie, ale takáto implementácia nie je optimálna
  Lepšie riešenie je využitie 1:N relácie a počet položiek obmedziť na programovej úrovni
+ Ďalšie riešenie je využitie 1 poľa a ukladať cesty k obrázkom ako json, rovnako je nutné spracovať tieto dáta na programovej úrovni
  */

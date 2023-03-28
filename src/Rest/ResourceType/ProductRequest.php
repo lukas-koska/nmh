@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Rest\ResourceType;
 
-use App\Rest\AsArray;
+use App\Trait\AsArray;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Controller\InjectorTrait\Validator;
 use App\Entity\Product;
+use App\Repository\ProductRepository;
 use App\Rest\ResourceType\ProductRequest;
 use App\Service\ElasticSearchService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -21,55 +22,49 @@ class ProductController extends AbstractController
 {
     use Validator;
 
+    public function __construct(
+        private ProductRepository $productRepository
+    )
+    {
+        // Nothing to do here
+    }
+
     /**
      * @Route("/product", name="product_index", methods={"GET"})
      */
-    public function index(ManagerRegistry $doctrine): JsonResponse
+    public function index(): JsonResponse
     {
         // If product has only one category, the category could be deliver with product
-        $products = $doctrine
-            ->getRepository(Product::class)
-            ->findAll();
+        /** @var Product $products */
+        $products = $this->productRepository->getAllProducts();
 
-        $data = [];
-
-        foreach ($products as $product) {
-            $data[] = [
-                'id' => $product->getId(),
-                'name' => $product->getName(),
-                'description' => $product->getDescription(),
-            ];
-        }
+        // Do some additional manipulation with products
 
         return $this->json([
             'success' => true,
-            'products' => $data
+            'products' => $products,
         ]);
     }
 
     /**
      * @Route("/product/{id}", name="product_show", methods={"GET"})
      */
-    public function show(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function show(int $id): JsonResponse
     {
+        // This could be moved to repository
         /** @var Product $product */
-        $product = $doctrine->getRepository(Product::class)->find($id);
+        $product = $this->productRepository->getProductFromId($id);
 
         if (!$product) {
-            return $this->json('No product found for id' . $id, 404);
+            return $this->json([
+                'success' => false,
+                'message' => 'No product found for id ' . $id
+            ], 404);
         }
-
-        $data =  [
-            'id' => $product->getId(),
-            'name' => $product->getName(),
-            'description' => $product->getDescription(),
-            'manufacturer' => $product->getManufacturer(),
-            'price' => $product->getPrice(),
-        ];
 
         return $this->json([
             'success' => true,
-            'product' => $data
+            'product' => $product->toArray(),
         ]);
     }
 
@@ -79,35 +74,26 @@ class ProductController extends AbstractController
     public function new(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
         $requestData = $request->request->all();
-        if (array_key_exists('price', $requestData)) {
-            $requestData['price'] = floatval($requestData['price']);
-        }
-
-        /** @var ProductRequest $dto */
-        $dto = $this->denormalizer->denormalize($requestData, ProductRequest::class);
+        $dto = $this->denormalizeRequest($requestData, ProductRequest::class);
 
         $errors = $this->validator->validate($dto);
 
         if (count($errors) > 0) {
             return $this->json([
                 'success' => false,
-                'errors' => count($errors)
+                'errors' => count($errors),
             ]);
         }
 
-        $entityManager = $doctrine->getManager();
-
-        $product = $this->denormalizer->denormalize($requestData, Product::class);
+        /** @var ?Product $product */
+        $product = $this->productRepository->createNewProduct($requestData);
         if ($product !== null) {
-            // Also add data to ElasticSearch
-            $entityManager->persist($product);
-            $entityManager->flush();
-
             return $this->json([
                 'success' => true,
-                'id' => $product->getId()
+                'id' => $product->getId(),
             ]);
         }
+
         return $this->json([
             'success' => false,
         ]);
@@ -120,43 +106,30 @@ class ProductController extends AbstractController
     {
         // Validate fields
         $requestData = json_decode($request->getContent(), true);
-        if (array_key_exists('price', $requestData)) {
-            $requestData['price'] = floatval($requestData['price']);
-        }
-
-        /** @var ProductRequest $dto */
-        $dto = $this->denormalizer->denormalize($requestData, ProductRequest::class);
+        $dto = $this->denormalizeRequest($requestData, ProductRequest::class);
 
         $errors = $this->validator->validate($dto);
 
         if (count($errors) > 0) {
             return $this->json([
                 'success' => false,
-                'errors' => count($errors)
+                'errors' => count($errors),
             ]);
         }
 
-        $entityManager = $doctrine->getManager();
-
         /** @var Product $product */
-        $product = $entityManager->getRepository(Product::class)->find($id);
-        if (!$product) {
+        $product = $this->productRepository->editProduct($dto, $id);
+
+        if ($product === null) {
             return $this->json([
                 'success' => false,
                 'message' => 'No product found for given id',
             ], 404);
         }
 
-        $product->setName($dto->getName());
-        $product->setDescription($dto->getDescription());
-        $product->setManufacturer($dto->getManufacturer());
-        $product->setPrice($dto->getPrice());
-
-        $entityManager->flush();
-
         return $this->json([
             'success' => true,
-            'product' => $product->toArray()
+            'product' => $product->toArray(),
         ]);
     }
 
@@ -167,19 +140,17 @@ class ProductController extends AbstractController
     {
         // Validate search fields
         $requestData = $request->request->all();
-        if (array_key_exists('price', $requestData)) {
-            $requestData['price'] = floatval($requestData['price']);
-        }
 
         /** @var ProductRequest $dto */
-        $dto = $this->denormalizer->denormalize($requestData, ProductRequest::class);
+        $dto = $this->denormalizeRequest($requestData, ProductRequest::class);
 
         $errors = $this->validator->validate($dto);
+
 
         if (count($errors) > 0) {
             return $this->json([
                 'success' => false,
-                'errors' => count($errors)
+                'errors' => count($errors),
             ]);
         }
 
@@ -189,7 +160,17 @@ class ProductController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'products' => $products
+            'products' => $products,
         ]);
+    }
+
+    private function denormalizeRequest(array $requestData, string $type)
+    {
+        // Do some additional manipulation
+        if (array_key_exists('price', $requestData)) {
+            $requestData['price'] = floatval($requestData['price']);
+        }
+
+        return $this->denormalizer->denormalize($requestData, $type);
     }
 }

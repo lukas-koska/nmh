@@ -14,6 +14,7 @@ A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony
 6. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
 7. Run `docker compose down --remove-orphans` to stop the Docker containers.
 
+* Redis needs to be configure to use it in this application
 ## Features
 
 * Production, development and CI ready

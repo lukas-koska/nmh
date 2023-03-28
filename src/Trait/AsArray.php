@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Rest;
+namespace App\Trait;
 
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
@@ -39,9 +39,6 @@ trait AsArray
         $json = $serializer->serialize(
             $this,
             'json',
-            [
-                AbstractNormalizer::IGNORED_ATTRIBUTES => ['cv'],
-            ]
         );
         $array = json_decode($json);
 
