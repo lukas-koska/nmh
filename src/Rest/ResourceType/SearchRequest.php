@@ -10,24 +10,48 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
 use Symfony\Component\Validator\Constraints\Type;
 
-class ProductRequest implements RequestInterface
+class SearchRequest implements RequestInterface
 {
     use AsArray;
 
-    #[Assert\NotBlank]
-    #[Assert\NotNull]
+    #[Assert\Blank]
+    #[Assert\Null]
+    #[Assert\MoreThan(0)]
+    private int $id;
+
+    #[Assert\Blank]
+    #[Assert\Null]
     #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
     private string $name;
 
     #[Assert\Blank]
+    #[Assert\Null]
     private ?string $description;
 
     #[Assert\Blank]
+    #[Assert\Null]
     #[Assert\Regex('/[\p{L}\p{M}]+ [\p{L}\p{M}]+/u')]
     private ?string $manufacturer;
 
     #[Assert\Blank]
+    #[Assert\Null]
     private ?float $price = 0;
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
 
     /**
      * @return string

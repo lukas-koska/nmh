@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Controller\InjectorTrait\Validator;
 use App\Entity\Product;
 use App\Rest\ResourceType\ProductRequest;
+use App\Service\ElasticSearchService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,7 +41,10 @@ class ProductController extends AbstractController
         }
 
 
-        return $this->json($data);
+        return $this->json([
+            'success' => true,
+            'products' => $data
+        ]);
     }
 
     /**
@@ -61,7 +67,10 @@ class ProductController extends AbstractController
             'price' => $product->getPrice(),
         ];
 
-        return $this->json($data);
+        return $this->json([
+            'success' => true,
+            'product' => $data
+        ]);
     }
 
     /**
@@ -153,12 +162,32 @@ class ProductController extends AbstractController
     /**
      * @Route("/product/search", name="product_search", methods={"POST"})
      */
-    public function search(ManagerRegistry $doctrine, Request $request): JsonResponse
+    public function search(ManagerRegistry $doctrine, Request $request, ElasticSearchService $elasticSearchService): JsonResponse
     {
+        $requestData = $request->request->all();
+        if (array_key_exists('price', $requestData)) {
+            $requestData['price'] = floatval($requestData['price']);
+        }
+
+        /** @var ProductRequest $dto */
+        $dto = $this->denormalizer->denormalize($requestData, ProductRequest::class);
+
+        $errors = $this->validator->validate($dto);
+
+        if (count($errors) > 0) {
+            return $this->json([
+                'success' => false,
+                'errors' => count($errors)
+            ]);
+        }
 
         // GET DATA FROM ElasticSearch
-        $data = [];
+        /** @var Product[] $products */
+        $products = $elasticSearchService->getSearchResultFromElastic($dto->toArray());
 
-        return $this->json($data);
+        return $this->json([
+            'success' => true,
+            'products' => $products
+        ]);
     }
 }
