@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Controller\InjectorTrait\CustomJsonResponse;
 use App\Controller\InjectorTrait\Validator;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
