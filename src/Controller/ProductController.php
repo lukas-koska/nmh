@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
+ * Routes could be either in config/routes.yaml
  * @Route("/api", name="api_")
  */
 class ProductController extends AbstractController

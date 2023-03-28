@@ -1,4 +1,4 @@
-# Zadanie pre NMH
+# Backend Assignment
 
 * Assignment is built on the official docker image for Symfony
 * Assignment contains only model for product
@@ -9,6 +9,7 @@
   * POST /api/product
   * PUT /api/product/{id}
   * POST /api/product/search
+* Some methods may lack functionality
 
 ## Symfony Docker
 
