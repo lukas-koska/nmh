@@ -26,6 +26,7 @@ class ProductController extends AbstractController
      */
     public function index(ManagerRegistry $doctrine): JsonResponse
     {
+        // If product has only one category, the category could be deliver with product
         $products = $doctrine
             ->getRepository(Product::class)
             ->findAll();
