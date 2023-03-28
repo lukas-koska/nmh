@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Rest\AsArray;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Product
@@ -26,21 +27,29 @@ class Product
     private ?int $id;
 
     /**
+     * @Groups({"elastica"})
+     *
      * @ORM\Column(name="name", type="string", nullable=false)
      */
     private ?string $name;
 
     /**
+     * @Groups({"elastica"})
+     *
      * @ORM\Column(name="description", type="text", nullable=true)
      */
     private ?string $description;
 
     /**
+     * @Groups({"elastica"})
+     *
      * @ORM\Column(name="manufacturer", type="string", nullable=true)
      */
     private ?string $manufacturer;
 
     /**
+     * @Groups({"elastica"})
+     *
      * @ORM\Column(name="price", type="float", options={"default" : "0"})
      */
     private ?float $price;
